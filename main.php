@@ -138,7 +138,13 @@
 		  ctx.font = '14px Arial';
 		  ctx.fillText('Photo by: ' + _credit, 8, 442);
 		  
-        };
+		  //js logo
+		  var jsImageObj = new Image();
+		  jsImageObj.src = 'js_logo.png';
+			jsImageObj.onload = function() {
+			  ctx.drawImage(jsImageObj, 676, 424);
+			};
+		};
       }
     }
 	// clear canvas by drawing a white rectangle over entire canvas
