@@ -56,7 +56,9 @@
         <form class="pure-form">
             <fieldset>
                 <legend>3) Download image</legend>
-                <a id="dl" download="Canvas.png" href="#" onclick="dlCanvas();"><button class="pure-button pure-button-primary download">Download</button></a>
+                <!-- <a id="dl" download="mjsShareCard.png" href="#" onclick="dlCanvas();" > -->
+                <button class="pure-button pure-button-primary download" onclick="dlCanvas();">Download</button>
+                <!-- </a> -->
             </fieldset>
         </form>
       </div>
@@ -210,8 +212,9 @@
       /* Change MIME type to trick the browser to downlaod the file instead of displaying it */
       dc = dc.replace(/^data:image\/[^;]*/, 'data:application/octet-stream');
       /* In addition to <a>'s "download" attribute, you can define HTTP-style headers */
-      dc = dc.replace(/^data:application\/octet-stream/, 'data:application/octet-stream;headers=Content-Disposition%3A%20attachment%3B%20filename=Canvas.png');
-      dl.href = dc;
+      dc = dc.replace(/^data:application\/octet-stream/, 'data:application/octet-stream;headers=Content-Disposition%3A%20attachment%3B%20filename=mjsShareCard.png');
+      window.open(dc);
+	  //dl.href = dc;
     };
 	// get content from mjs api
 	function getContent(url) {
