@@ -7,11 +7,13 @@ threadsafe: yes
 handlers:
 - url: /favicon\.ico
   static_files: favicon.ico
-  upload: favicon\.ico
-  
+  upload: favicon\.ico  
 - url: /js_logo\.png
   static_files: js_logo.png
   upload: js_logo\.png
+- url: /canvas\.js
+  static_files: canvas.js
+  upload: canvas\.js
 
 - url: /image
   script: image.php

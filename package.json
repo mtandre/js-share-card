@@ -1,0 +1,9 @@
+{
+  "name": "mjs-share-card",
+  "version": "0.9.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "docco": "^0.7.0"
+  }
+}
