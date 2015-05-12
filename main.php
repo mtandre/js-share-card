@@ -13,10 +13,14 @@
     <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/grids-responsive-min.css">
   <!--<![endif]-->
   <style>
-  .left { padding:10px; }
-  .download { width:100%; }
-  #textoverride { min-height:125px; }
-  .right { margin-top:10px; text-align: center; }
+  .left { padding: 10px; }
+  .generate {margin-bottom:10px; width:100%;}
+  .download { width: 100%; background: rgb(28, 184, 65); color:rgba(255,255,255,1); }
+  .download.disabled { background-image: none; opacity: .4; cursor: not-allowed; box-shadow: none; }
+  .pure-button-hover, .pure-button:hover, .pure-button:focus {background-image:none; color:rgba(255,255,255,1);}
+  #textoverride { min-height: 125px; }
+  .right { margin-top: 10px; text-align: center; }
+  a, a:visited, a:hover { color: #fff; text-decoration: none; }
   </style>
 </head>
 <body onload="canvasInit();">
@@ -27,7 +31,7 @@
             <fieldset>
                 <legend>1) Enter JSOnline.com URL</legend>
                 <input type="text" id="url">
-                <button onclick="getContent(document.getElementById('url').value); return false;" class="pure-button pure-button-primary">Go</button>
+                <button onclick="getContent(document.getElementById('url').value); return false;" class="pure-button pure-button-primary">Get story data</button>
             </fieldset>
         </form>
         <form class="pure-form">
@@ -38,7 +42,7 @@
                 <label for="checkbox-one" class="pure-checkbox">
                     <input id="checkbox-one" type="checkbox" value="" onchange="if (this.checked) { updateImage('fadeOn'); } else { updateImage('fadeOff'); };">
                     Darken Image
-                </label>     
+                </label>
                 <label for="radio-one" class="pure-radio">
                     <input id="radio-one" type="radio" name="optionsRadios" value="top" checked onchange="updateImage('top');">
                     Top align image
@@ -56,9 +60,8 @@
         <form class="pure-form">
             <fieldset>
                 <legend>3) Download image</legend>
-                <!-- <a id="dl" download="mjsShareCard.png" href="#" onclick="dlCanvas();" > -->
-                <button class="pure-button pure-button-primary download" onclick="dlCanvas();">Download</button>
-                <!-- </a> -->
+                <button class="pure-button pure-button-primary generate" onclick="prep(); return false;">Generate</button>
+                <a id="dl" download="MJS-share-card.png" href="" class="pure-button download disabled">Download</a>
             </fieldset>
         </form>
       </div>
@@ -81,6 +84,7 @@
 	var bootstrap = "content";  // getContent helper for cross-domain
 	var savedData = {};			// global content store
 	var imageY = 0;				// image width always = 900px, store computed height for calcs
+    var step = -1;
 	//prefill canvas with "getting started" message
 	function canvasInit() {
 	  var canvas = document.getElementById("canvas");
@@ -89,6 +93,7 @@
 		ctx.fillStyle = '#444';
         ctx.font = '28px Arial';
         wrapText(ctx, "← Start by entering a jsonline.com url on the left.", 100, 25, 700, 50);
+        step = 0;
 	  }
 	}
 	// main drawing method
@@ -99,11 +104,11 @@
 	  var canvas = document.getElementById("canvas");
       if (canvas.getContext) {
         var ctx = canvas.getContext("2d");
-		
+
 		if (_opts === undefined) {
 			var _opts = defaultOptions;
 		}
-		
+
         var bgImageObj = new Image();
         bgImageObj.src = _image;
 		// load image
@@ -118,11 +123,11 @@
 			// align image: top (default)
 		    ctx.drawImage(bgImageObj, 0, 0);
 		  }
-		
+
 		  if (_opts.fade) {
 			// darken image
 			ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-		    ctx.fillRect(0, 0, canvas.width, canvas.height);  
+		    ctx.fillRect(0, 0, canvas.width, canvas.height);
 		  } else {
 			// text shadow
             ctx.shadowColor = '#000';
@@ -132,14 +137,14 @@
 		  }
 		  ctx.fillStyle = '#fff';
           ctx.font = '48px Georgia';
-		  
+
 		  // title
           wrapText(ctx, _title, 100, 310, 700, 50);
-		  
+
 		  // photo credit
 		  ctx.font = '14px Arial';
 		  ctx.fillText('Photo by: ' + _credit, 8, 442);
-		  
+
 		  //js logo
 		  var jsImageObj = new Image();
 		  jsImageObj.src = 'js_logo.png';
@@ -147,6 +152,7 @@
 			  ctx.drawImage(jsImageObj, 676, 424);
 			};
 		};
+        step = 2;
       }
     }
 	// clear canvas by drawing a white rectangle over entire canvas
@@ -171,18 +177,21 @@
 		} else if (update === "bottom") {
 			defaultOptions.top = false;
 			defaultOptions.middle = false;
-			defaultOptions.bottom = true;	
+			defaultOptions.bottom = true;
 		} else if (update === "fadeOn") {
 			defaultOptions.fade = true;
 		} else if (update === "fadeOff") {
 			defaultOptions.fade = false;
 		}
+        document.getElementById('dl').className = "pure-button download disabled";
 		draw(savedData.photo, savedData.credit, savedData.title, savedData.imageY, defaultOptions);
 	}
 	// redraw modified title
 	function updateText(newText) {
 	    clearCanvas();
-	    draw(savedData.photo, savedData.credit, newText, savedData.imageY);
+        savedData.title = newText;
+        document.getElementById('dl').className = "pure-button download disabled";
+	    draw(savedData.photo, savedData.credit, savedData.title, savedData.imageY);
 	}
 	// wrap text to fit inside bounds
     function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -205,23 +214,28 @@
         ctx.fillText(line, x, y);
     }
 	// cross-browser method to force download of of canvas as image
-    function dlCanvas() {
-      var dl = document.getElementById('dl');
-      var canvas = document.getElementById("canvas");
-      var dc = canvas.toDataURL('image/png');
-      /* Change MIME type to trick the browser to downlaod the file instead of displaying it */
-      dc = dc.replace(/^data:image\/[^;]*/, 'data:application/octet-stream');
-      /* In addition to <a>'s "download" attribute, you can define HTTP-style headers */
-      dc = dc.replace(/^data:application\/octet-stream/, 'data:application/octet-stream;headers=Content-Disposition%3A%20attachment%3B%20filename=mjsShareCard.png');
-      window.open(dc);
-	  //dl.href = dc;
+    function prep() {
+      if(step > 1) {
+        var dl = document.getElementById('dl');
+        var canvas = document.getElementById("canvas");
+        var dc = canvas.toDataURL('image/png');
+        /* Change MIME type to trick the browser to downlaod the file instead of displaying it */
+        dc = dc.replace(/^data:image\/[^;]*/, 'data:application/octet-stream');
+        /* In addition to <a>'s "download" attribute, you can define HTTP-style headers */
+        dc = dc.replace(/^data:application\/octet-stream/, 'data:application/octet-stream;headers=Content-Disposition%3A%20attachment%3B%20filename=MJS-share-card.png');
+	    dl.href = dc;
+        dl.className = "pure-button download";
+      } else {
+        alert('Please start by entering a jsonline.com url, clicking "Get story data", and then you can click "Generate".');
+      }
     };
 	// get content from mjs api
 	function getContent(url) {
 	  if (url.indexOf('.jsonline.com') > -1) {
-	  var id = url.match(/(?!-)\d+(?=\.html)/)[0];
-	  var apiUrl = 'http://m.jsonline.com/api/v1/?id=' + id + '&bootstrap=' + bootstrap;
-	  bootstrapContent(apiUrl, parseContent);
+	      var id = url.match(/(?!-)\d+(?=\.html)/)[0];
+	      var apiUrl = 'http://m.jsonline.com/api/v1/?id=' + id + '&bootstrap=' + bootstrap;
+	      bootstrapContent(apiUrl, parseContent);
+          step = 1;
 	  } else {
 		  var newUrl = prompt('Something about that URL is incorrect. It must be a valid JSOnline.com link to an article or blog post. Double check and try again:');
 		  getContent(newUrl);
@@ -242,12 +256,17 @@
 	  var data = window[bootstrap].collection;
 	  data = data[0];
 	  var tempData = {};
-	  tempData.title = data.title.replace(/<\/?[^>]+(>|$)/g, " ").replace('&quot;','"').replace('&amp;','&') || "";
-	  tempData.photo = relayImageUrl(resizeImage(data.photoUrl));
-	  tempData.credit = data.photoCredit;
-	  tempData.imageY = imageY;
-	  savedData = tempData;
-	  fillContent(savedData);
+	  if (data.photoUrl && data.photoUrl !== "") {
+        tempData.title = data.title.replace(/<\/?[^>]+(>|$)/g, " ").replace('&quot;','"').replace('&amp;','&') || "";
+        tempData.photo = relayImageUrl(resizeImage(data.photoUrl));
+	    tempData.credit = data.photoCredit;
+	    tempData.imageY = imageY;
+	    savedData = tempData;
+	    fillContent(savedData);
+      } else {
+          alert('The selected story does not have a lead story image. Please select a story that does have a lead image.');
+    }
+
 	}
 	// use clickability to get a correctly sized and scaled image
 	function resizeImage(imageUrl) {
@@ -256,8 +275,8 @@
       var dims = original.match(/\/\d+\*\d+\//g);  // get dimensions out of url
       if (dims) {
         var dim = dims[0];
-        var trimmed = dim.replace(/\//g,'');       // strip slashes 
-        var parts = trimmed.split('*');            
+        var trimmed = dim.replace(/\//g,'');       // strip slashes
+        var parts = trimmed.split('*');
         var x = parseInt(parts[0],10);			   // width
         var y = parseInt(parts[1],10);			   // height
         var ymod = parseInt((900 * y) / x);		   // scale height to match width of 900
