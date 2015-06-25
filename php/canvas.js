@@ -9,14 +9,26 @@ var bootstrap = "content";  // getContent helper for cross-domain
 var savedData = {};         // global content store
 var imageY = 0;             // image width always = 900px, store computed height for calcs
 var step = -1;
+var ratio = 1;              // account for hidpi screens
 //prefill canvas with "getting started" message
 function canvasInit() {
   var canvas = document.getElementById("canvas");
   if (canvas.getContext) {
     var ctx = canvas.getContext("2d");
+    //determine and set ratio, see mbr()
+    var devicePixelRatio = window.devicePixelRatio || 1;
+    var backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+                            ctx.mozBackingStorePixelRatio ||
+                            ctx.msBackingStorePixelRatio ||
+                            ctx.oBackingStorePixelRatio ||
+                            ctx.backingStorePixelRatio || 1;
+    ratio = devicePixelRatio / backingStoreRatio;
+    // create base canvas
+    canvas.height = mbr(450);
+    canvas.width = mbr(900);
     ctx.fillStyle = '#444';
-    ctx.font = '28px Arial';
-    wrapText(ctx, "← Start by entering a jsonline.com url on the left.", 100, 25, 700, 50);
+    ctx.font = '56px Arial';
+    wrapText(ctx, "← Start by entering a jsonline.com url on the left.", mbr(100), mbr(25), mbr(700), mbr(50));
     step = 0;
   }
 }
@@ -39,10 +51,10 @@ function draw(_image, _credit, _title, _imageY, _opts) {
     bgImageObj.onload = function() {
       if (_opts.bottom) {
         // align image: bottom
-        ctx.drawImage(bgImageObj, 0, (0 - (_imageY - 450)));
+        ctx.drawImage(bgImageObj, 0, mbr((0 - (_imageY - 450))));
       } else if (_opts.middle) {
         // align image: middle
-        ctx.drawImage(bgImageObj, 0, (0 - ((_imageY - 450) / 2)));
+        ctx.drawImage(bgImageObj, 0, mbr((0 - ((_imageY - 450) / 2))));
       } else {
         // align image: top (default)
         ctx.drawImage(bgImageObj, 0, 0);
@@ -57,23 +69,23 @@ function draw(_image, _credit, _title, _imageY, _opts) {
         ctx.shadowColor = '#000';
         ctx.shadowOffsetX = 1;
         ctx.shadowOffsetY = 1;
-        ctx.shadowBlur = 40;
+        ctx.shadowBlur = mbr(40);
       }
       ctx.fillStyle = '#fff';
       ctx.font = '48px Georgia';
 
       // title
-      wrapText(ctx, _title, 100, 310, 700, 50);
+      wrapText(ctx, _title, mbr(100), mbr(310), mbr(700), mbr(50));
 
       // photo credit
       ctx.font = '14px Arial';
-      ctx.fillText('Photo by: ' + _credit, 8, 442);
+      ctx.fillText('Photo by: ' + _credit, mbr(8), mbr(442));
 
       //js logo
       var jsImageObj = new Image();
       jsImageObj.src = 'js_logo.png';
       jsImageObj.onload = function() {
-        ctx.drawImage(jsImageObj, 676, 424);
+        ctx.drawImage(jsImageObj, mbr(676), mbr(424));
       };
     };
     step = 2;
@@ -137,6 +149,13 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   }
   ctx.fillText(line, x, y);
 }
+// multiply by ratio
+// Modifies input values for canvas elements taking
+// into account the backing store pixel ratio (safari)
+// and the device pixel ratio.
+function mbr(original) {
+  return (original * ratio);
+}
 // cross-browser method to force download of of canvas as image
 function prep() {
   if(step > 1) {
@@ -189,8 +208,7 @@ function parseContent(){
     fillContent(savedData);
   } else {
       alert('The selected story does not have a lead story image. Please select a story that does have a lead image.');
-}
-
+  }
 }
 // use clickability to get a correctly sized and scaled image
 function resizeImage(imageUrl) {
@@ -203,7 +221,7 @@ function resizeImage(imageUrl) {
     var parts = trimmed.split('*');
     var x = parseInt(parts[0],10);         // width
     var y = parseInt(parts[1],10);         // height
-    var ymod = parseInt((900 * y) / x);      // scale height to match width of 900
+    var ymod = parseInt((mbr(900) * y) / x);      // scale height to match width of 900
     imageY = ymod;
     var final = '/' + 900 + '*' + ymod + '/';  // create new dims portion of url
     return original.replace(/\/\d+\*\d+\//g, final) || false;

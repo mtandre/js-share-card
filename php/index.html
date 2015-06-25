@@ -55,7 +55,7 @@
         }
     </style>
 </head>
-<body onload="canvasInit();">
+<body>
     <div class="pure-g">
         <div class="pure-u-md-1-4">
             <div class="left">
@@ -105,13 +105,16 @@
         </div>
         <div class="pure-u-md-3-4">
             <div class="right">
-                <canvas id="canvas" width="900" height="450">
+                <canvas id="canvas" style="height: 450px; width: 900px;">
                     This browser does not support canvas elements, try a recent version of Chrome.
                 </canvas>
             </div>
         </div>
     </div>
     <script src="canvas.js"></script>
+    <script>
+        canvasInit();
+    </script>
 </body>
 </html>
 
