@@ -11,12 +11,9 @@ handlers:
 - url: /js_logo\.png
   static_files: js_logo.png
   upload: js_logo\.png
-- url: /canvas\.js
-  static_files: canvas.js
-  upload: canvas\.js
 
 - url: /image
   script: image.php
 
 - url: /.*
-  script: main.php
+  script: index.html
