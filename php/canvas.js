@@ -1,4 +1,4 @@
-var envUrl = '/image.php?url=';
+var envUrl = '/image?url=';
 var defaultOptions = {      // default image settings
     bottom: false,          // align bottom of image to bottom of canvas
     middle: false,          // align middle of image to middle of canvas
@@ -60,14 +60,15 @@ function draw(_image, _credit, _title, _imageY, _opts) {
         ctx.shadowBlur = 40;
       }
       ctx.fillStyle = '#fff';
-      ctx.font = '48px Georgia';
+      ctx.font = '58px Georgia';
 
       // title
-      wrapText(ctx, _title, 100, 310, 700, 50);
+      var lineCount = wrapText(ctx, _title, 100, 260, 700, 64, false);
+      wrapText(ctx, _title, 100, (260 - ( (lineCount - 3) * 64 )), 700, 64, true);
 
       // photo credit
-      ctx.font = '14px Arial';
-      ctx.fillText('Photo by: ' + _credit, 8, 442);
+      ctx.font = 'italic 14px Verdana';
+      ctx.fillText('Photo: ' + _credit, 8, 442);
 
       //js logo
       var jsImageObj = new Image();
@@ -118,28 +119,35 @@ function updateText(newText) {
   draw(savedData.photo, savedData.credit, savedData.title, savedData.imageY);
 }
 // wrap text to fit inside bounds
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, render) {
   var words = text.split(' ');
   var line = '';
+  var lineCount = 1;
 
   for(var n = 0; n < words.length; n++) {
     var testLine = line + words[n] + ' ';
     var metrics = ctx.measureText(testLine);
     var testWidth = metrics.width;
     if (testWidth > maxWidth && n > 0) {
-      ctx.fillText(line, x, y);
+      if (render) {
+        ctx.fillText(line, x, y);
+      }
       line = words[n] + ' ';
       y += lineHeight;
+      lineCount++;
     }
     else {
       line = testLine;
     }
   }
-  ctx.fillText(line, x, y);
+  if (render) {
+    ctx.fillText(line, x, y);
+  }
+  return lineCount;
 }
 // cross-browser method to force download of of canvas as image
 function prep() {
-  if(step > 1) {
+  if (step > 1) {
     var dl = document.getElementById('dl');
     var canvas = document.getElementById("canvas");
     var dc = canvas.toDataURL('image/png');
@@ -201,9 +209,9 @@ function resizeImage(imageUrl) {
     var dim = dims[0];
     var trimmed = dim.replace(/\//g,'');       // strip slashes
     var parts = trimmed.split('*');
-    var x = parseInt(parts[0],10);         // width
-    var y = parseInt(parts[1],10);         // height
-    var ymod = parseInt((900 * y) / x);      // scale height to match width of 900
+    var x = parseInt(parts[0],10);             // width
+    var y = parseInt(parts[1],10);             // height
+    var ymod = parseInt((900 * y) / x);        // scale height to match width of 900
     imageY = ymod;
     var final = '/' + 900 + '*' + ymod + '/';  // create new dims portion of url
     return original.replace(/\/\d+\*\d+\//g, final) || false;
